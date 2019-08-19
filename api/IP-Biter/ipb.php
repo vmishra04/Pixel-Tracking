@@ -535,13 +535,15 @@ var Dashboard = {
   generateConfigJson : function(){
       console.log($('#trackingImgUrlTxt').val());
       console.log($('#trackingImgShortUrlTxt').val());
+      var iptemp = "<?php echo gethostname();; ?>";
+      console.log(iptemp)
       return {
           uuid : $('#trackUUIDTxt').val(),
           trackUUID : Dashboard.trackingUUID,
           trackingEnabled : $('#trackingEnabledChk').is(':checked'),
           mailId : 'Test mail',
           notificationAddress : 'projectpirnaha@gmail.com',
-          trackingImage : 'http://54.193.90.107/api/IP-Biter/image/2278.jpg',
+          trackingImage : 'http://54.153.72.136/Pixel-Tracking/api/IP-Biter/image/2278.jpg',
           trackingImageStatusCode : parseInt($('#trackingImageHTTPStatusTxt').val()),
           trackingImageCustomHeaderList : function(){
               var ret = [];
