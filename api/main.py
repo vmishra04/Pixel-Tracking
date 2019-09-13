@@ -93,7 +93,7 @@ def create_tracker():
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox') # required when running as root user. otherwise you would get no sandbox errors. 
     driver = webdriver.Chrome('/usr/bin/chromedriver', options=chrome_options,service_args=['--verbose', '--log-path=/tmp/chromedriver.log'])
-    driver.get('http://54.193.90.107/api/IP-Biter/ipb.php?op=dashboard') 
+    driver.get('http://54.153.72.136/Pixel-Tracking/api/IP-Biter/ipb.php?op=dashboard') 
     #return jsonify({'data': driver.title})
     if driver:
         #Serving the latest created config file

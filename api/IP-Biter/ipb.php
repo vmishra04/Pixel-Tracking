@@ -535,8 +535,6 @@ var Dashboard = {
   generateConfigJson : function(){
       console.log($('#trackingImgUrlTxt').val());
       console.log($('#trackingImgShortUrlTxt').val());
-      var iptemp = "<?php echo gethostname();; ?>";
-      console.log(iptemp)
       return {
           uuid : $('#trackUUIDTxt').val(),
           trackUUID : Dashboard.trackingUUID,
@@ -1291,40 +1289,46 @@ if(isset($_GET['op']) && $_GET['op'] == 'preventTracking'){
 
 if(isset($_GET['op']) && $_GET['op'] == 'i'){
     try{
+        $reportFolderFull = __DIR__.'/'.$reportFolder;
         if(!isset($_GET['tid']) || $_GET['tid']=='')
             throw new Exception('tid parameter required');
         $trackUUID = $_GET['tid'];
+        if (!file_exists($reportFolderFull.'/'.$trackUUID.'.json')){
+            file_put_contents($reportFolderFull.'/'.$_GET['tid'].'.json', '{"uuid" : "'.$_GET['tid'].'", "configUUID" : "'.$_GET['tid'].'", "time" : "'.time().'", "trackList" : []}');
+        } else {
+            $reportJson = json_decode(file_get_contents($reportFolderFull.'/'.$_GET['tid'].'.json'));
+        }
         if(!file_exists(__DIR__.'/'.$reportFolder.'/'.$trackUUID.'.json'))
             throw new Exception('Invalid tid '. $trackUUID);
         $track = json_decode(file_get_contents(__DIR__.'/'.$reportFolder.'/'.$trackUUID.'.json'));
-        if(!file_exists(__DIR__.'/'.$configFolder.'/'.$track->configUUID.'.json'))
-            throw new Exception('Internal Error: impossible to find the configuration file associated to the tid '. $trackUUID);
-        $config = json_decode(file_get_contents(__DIR__.'/'.$configFolder.'/'.$track->configUUID.'.json'));
-        if($config->trackingEnabled === TRUE && !isset($_COOKIE[$track->configUUID])){
-            array_push($track->trackList, array(
-                'time'=>date('d-m-Y H:i:s', time()), 
-                'ip' => $_SERVER['REMOTE_ADDR'],
-                'headers' => getallheaders()
-            ));
-            $track->time = time();
-            file_put_contents(__DIR__.'/'.$reportFolder.'/'.$trackUUID.'.json', json_encode($track));
-            if(function_exists('mail') && isset($config->notificationAddress) && $config->notificationAddress!=''){
-                $mailText = '<html><body><p>Your tracking image has been visualized right now by '.$_SERVER['REMOTE_ADDR'].'.</p><p>Check all the details in the <a href="'.(isset($_SERVER['HTTPS'])?'https':'http').'://'.$_SERVER['HTTP_HOST'].strtok($_SERVER['REQUEST_URI'],'?').'?op='.$dashboardPage.'&uuid='.$config->uuid.'">DASHBOARD</a></p></body></html>';
-                $mailSent = mail($config->notificationAddress, '[Tracking Live Report] '.$config->mailId, wordwrap($mailText, 70, "\r\n"), "MIME-Version: 1.0\r\nContent-type:text/html;charset=UTF-8\r\n");
-                if(!$mailSent)
-                    $logError("Mail not sended: ". error_get_last()!=null?error_get_last()['message']:'No PHP error detected');
-                
-            }
-        }  
+
+        
+        array_push($track->trackList, array(
+            'time'=>date('d-m-Y H:i:s', time()), 
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'headers' => getallheaders()
+        ));
+        $track->time = time();
+        file_put_contents(__DIR__.'/'.$reportFolder.'/'.$trackUUID.'.json', json_encode($track));
+            
+         
+        $congif["image_url"] = 'http://54.153.72.136/Pixel-Tracking/api/IP-Biter/image/2278.jpg';
+        $filename = "/home/ubuntu/public_html/Pixel-Tracking/api/IP-Biter/image/2278.jpg";
+        $config['trackingImageCustomHeaderList'] = ["Content-Type: image/png","Cache-Control: no-store, no-cache, must-revalidate, max-age=0","Cache-Control: post-check=0, pre-check=0","Pragma: no-cache","Expires: 0","P3P: CP=\"OTI DSP COR CUR IVD CONi OTPi OUR IND UNI STA PRE\""];
+        
         $headerAddedList = array();
-        foreach($config->trackingImageCustomHeaderList as $header){
+        $config['trackingImageStatusCode'] = 200;
+        foreach($config['trackingImageCustomHeaderList'] as $header){
             $key = explode(':', $header)[0];
-            header($header, !in_array($key, $headerAddedList, TRUE), $config->trackingImageStatusCode);
+            header($header, !in_array($key, $headerAddedList, TRUE), $config['trackingImageStatusCode']);
             $headerAddedList[] = $key;
         }
-        http_response_code($config->trackingImageStatusCode);
-        if(isset($config->trackingImage) && $config->trackingImage!='')
-            echo file_get_contents($config->trackingImage);
+        http_response_code(200);
+
+        if(isset($congif["image_url"]) && $congif["image_url"]!='')
+            echo file_get_contents($congif["image_url"]);
+            //$image=imagecreatefromjpeg($congif["image_url"]);
+            //echo imagejpeg($image);
     }catch(Exception $ex){
         $logError($ex->getMessage());
         http_response_code(400);
